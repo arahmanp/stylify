@@ -179,6 +179,8 @@ int main(int argc, char *argv[]) {
                 } else if(arg == "--string") {
                     if(i < argc - 1) s.setString(argv[++i]);
                     else throwError("Missing string!");
+                } else if(arg == "--version") {
+                    //
                 } else {
                     throwError("Unknown flag `" + arg + "`!");
                 }
