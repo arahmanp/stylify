@@ -5,6 +5,7 @@
 
 #define APP_NAME "Stylify"
 #define APP_VERSION "0.1.0"
+#define APP_DESC "A small CLI tool for styling terminal text."
 #define APP_AUTHOR "Andhika Rahman"
 
 #define BOLD "\033[1m"
@@ -56,7 +57,7 @@ void throwWarning(const std::string &msg, const std::string &hint = "") {
 // Show version
 void showVersion() {
     std::cout << BOLD << APP_NAME << RESET << ' ' << APP_VERSION << '\n'
-              << "A small CLI tool for styling terminal text.\n"
+              << APP_DESC << '\n'
               << "Author: " << APP_AUTHOR << '\n';
     exit(0);
 }
@@ -67,8 +68,8 @@ void showHelp() {
               << "A small CLI tool for styling terminal text.\n\n"
 
               << BOLD << "USAGE" << RESET << '\n'
-              << "  stylify [OPTIONS] <string>\n"
-              << "  stylify [OPTIONS] --string <string>\n\n"
+              << "  stylify [OPTIONS] <text>\n"
+              << "  stylify [OPTIONS] --text <text>\n\n"
 
               << BOLD << "OPTIONS" << RESET << '\n'
               << "  --fg-color <color>   Set the text (foreground) color\n"
@@ -76,7 +77,7 @@ void showHelp() {
               << "  --bold               Make the text bold\n"
               << "  --italic             Make the text italic\n"
               << "  --underline          Underline the text\n"
-              << "  --string <string>    Provide the text to style\n"
+              << "  --text <text>        Provide the text to style\n"
               << "  --version            Show version information\n"
               << "  --help               Show this help message\n\n"
 
@@ -92,15 +93,15 @@ void showHelp() {
 
               << BOLD << "EXAMPLES" << RESET << '\n'
               << "  stylify \"Hello\" --fg-color red --bold\n"
-              << "  stylify --string \"Hello World\" --bg-color blue --underline\n"
+              << "  stylify --text \"Hello World\" --bg-color blue --underline\n"
               << "  stylify \"Hi\" --fg-color white --bg-color magenta --italic\n";
 
     exit(0);
 }
 
 struct Config {
-    std::string str;
-    bool isSetStr = false;
+    std::string text;
+    bool isSetText = false;
 
     std::string fgColor = FG_DEFAULT;
     std::string bgColor = BG_DEFAULT;
@@ -173,25 +174,25 @@ void setUnderline(Config &conf) {
     conf.underline = true;
 }
 
-void setString(Config &conf, const std::string &s) {
-    if(conf.isSetStr) {
-        throwError("More than one string was provided.",
+void setText(Config &conf, const std::string &text) {
+    if(conf.isSetText) {
+        throwError("More than one text was provided.",
                    "Wrap your text in quotes, e.g. stylify \"hello world\" --bold");
     }
 
-    conf.str = s;
-    conf.isSetStr = true;
+    conf.text = text;
+    conf.isSetText = true;
 }
 
 std::string generate(const Config &conf) {
-    if(!conf.isSetStr) {
-        throwError("No string was provided.",
-                   "Pass text directly or use --string \"text\".");
+    if(!conf.isSetText) {
+        throwError("No text was provided.",
+                   "Pass text directly or use --text \"text\".");
     }
 
-    if(conf.str.empty()) {
-        throwWarning("The provided string is empty, so there is nothing to style.",
-                     "Provide a non-empty string, e.g. stylify \"hello\" --bold");
+    if(conf.text.empty()) {
+        throwWarning("The provided text is empty, so there is nothing to style.",
+                     "Provide a non-empty text, e.g. stylify \"hello\" --bold");
     }
 
     if(conf.fgColor == FG_DEFAULT && conf.bgColor == BG_DEFAULT &&
@@ -206,7 +207,7 @@ std::string generate(const Config &conf) {
     if(conf.italic) result += ITALIC;
     if(conf.underline) result += UNDERLINE;
 
-    result += conf.str + RESET;
+    result += conf.text + RESET;
 
     return result;
 }
@@ -216,27 +217,27 @@ int main(int argc, char *argv[]) {
         throwError("No arguments provided.",
                    "Try: stylify \"hello\" --fg-color red --bold");
     } else {
-        Config strConfig;
+        Config textConfig;
 
         for(size_t i = 1; i < argc; i++) {
             std::string arg = argv[i];
 
-            if(arg.size() >= 1 && arg[0] == '-') {
+            if(arg.size() >= 2 && arg.substr(0, 2) == "--") {
                 if(arg == "--fg-color") {
-                    if(i < argc - 1) setForegroundColor(strConfig, argv[++i]);
+                    if(i < argc - 1) setForegroundColor(textConfig, argv[++i]);
                     else throwError("Missing color!");
                 } else if(arg == "--bg-color") {
-                    if(i < argc - 1) setBackgroundColor(strConfig, argv[++i]);
+                    if(i < argc - 1) setBackgroundColor(textConfig, argv[++i]);
                     else throwError("Missing color!");
                 } else if(arg == "--bold") {
-                    setBold(strConfig);
+                    setBold(textConfig);
                 } else if(arg == "--italic") {
-                    setItalic(strConfig);
+                    setItalic(textConfig);
                 } else if(arg == "--underline") {
-                    setUnderline(strConfig);
-                } else if(arg == "--string") {
-                    if(i < argc - 1) setString(strConfig, argv[++i]);
-                    else throwError("Missing string!");
+                    setUnderline(textConfig);
+                } else if(arg == "--text") {
+                    if(i < argc - 1) setText(textConfig, argv[++i]);
+                    else throwError("Missing text!");
                 } else if(arg == "--version") {
                     showVersion();
                 } else if(arg == "--help") {
@@ -245,10 +246,10 @@ int main(int argc, char *argv[]) {
                     throwError("Unknown flag `" + arg + "`!");
                 }
             } else {
-                setString(strConfig, arg);
+                setText(textConfig, arg);
             }
         }
 
-        std::cout << generate(strConfig) << '\n';
+        std::cout << generate(textConfig) << '\n';
     }
 }
