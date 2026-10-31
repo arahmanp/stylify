@@ -61,6 +61,43 @@ void showVersion() {
     exit(0);
 }
 
+// Show help
+void showHelp() {
+    std::cout << BOLD << APP_NAME << RESET << ' ' << APP_VERSION << '\n'
+              << "A small CLI tool for styling terminal text.\n\n"
+
+              << BOLD << "USAGE" << RESET << '\n'
+              << "  stylify [OPTIONS] <string>\n"
+              << "  stylify [OPTIONS] --string <string>\n\n"
+
+              << BOLD << "OPTIONS" << RESET << '\n'
+              << "  --fg-color <color>   Set the text (foreground) color\n"
+              << "  --bg-color <color>   Set the background color\n"
+              << "  --bold               Make the text bold\n"
+              << "  --italic             Make the text italic\n"
+              << "  --underline          Underline the text\n"
+              << "  --string <string>    Provide the text to style\n"
+              << "  --version            Show version information\n"
+              << "  --help               Show this help message\n\n"
+
+              << BOLD << "COLORS" << RESET << '\n'
+              << "  " << FG_BLACK   << "black"   << RESET << ", "
+              << FG_RED     << "red"     << RESET << ", "
+              << FG_GREEN   << "green"   << RESET << ", "
+              << FG_YELLOW  << "yellow"  << RESET << ", "
+              << FG_BLUE    << "blue"    << RESET << ", "
+              << FG_MAGENTA << "magenta" << RESET << ", "
+              << FG_CYAN    << "cyan"    << RESET << ", "
+              << FG_WHITE   << "white"   << RESET << "\n\n"
+
+              << BOLD << "EXAMPLES" << RESET << '\n'
+              << "  stylify \"Hello\" --fg-color red --bold\n"
+              << "  stylify --string \"Hello World\" --bg-color blue --underline\n"
+              << "  stylify \"Hi\" --fg-color white --bg-color magenta --italic\n";
+
+    exit(0);
+}
+
 struct Config {
     std::string str;
     bool isSetStr = false;
@@ -202,6 +239,8 @@ int main(int argc, char *argv[]) {
                     else throwError("Missing string!");
                 } else if(arg == "--version") {
                     showVersion();
+                } else if(arg == "--help") {
+                    showHelp();
                 } else {
                     throwError("Unknown flag `" + arg + "`!");
                 }
