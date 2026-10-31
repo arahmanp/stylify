@@ -67,11 +67,7 @@ public:
         else if(color == "cyan")    fgColor = FG_CYAN;
         else if(color == "white")   fgColor = FG_WHITE;
         else if(color == "default") fgColor = FG_DEFAULT;
-        else {
-            std::cerr << BOLD << FG_RED << "error:" << RESET
-                      << " Unknown color `" << color << "`!\n";
-            exit(1);
-        }
+        else throwError("Unknown color `" + color + "`!");
 
         return *this;
     }
@@ -86,11 +82,7 @@ public:
         else if(color == "cyan")    bgColor = BG_CYAN;
         else if(color == "white")   bgColor = BG_WHITE;
         else if(color == "default") bgColor = BG_DEFAULT;
-        else {
-            std::cerr << BOLD << FG_RED << "error:" << RESET
-                      << " Unknown color `" << color << "`!\n";
-            exit(1);
-        }
+        else throwError("Unknown color `" + color + "`!");
 
         return *this;
     }
