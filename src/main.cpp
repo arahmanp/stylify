@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <cstdlib>
 #include <iostream>
 #include <string>
@@ -153,21 +154,41 @@ public:
     }
 };
 
-int main() {
-    StyledString s;
+int main(int argc, char *argv[]) {
+    if(argc == 1) {
+        throwError("You must provide at least one argument!");
+    } else {
+        StyledString s;
 
-    s.setString("Hello, world!");
-    s.setBold(true);
-    s.setItalic(true);
+        for(size_t i = 1; i < argc; i++) {
+            std::string arg = argv[i];
 
-    std::string s1 = s.build();
+            if(arg.size() >= 1 && arg[0] == '-') {
+                if(arg == "--fg-color") {
+                    if(i < argc - 1) s.setForegroundColor(argv[++i]);
+                    else throwError("Missing color!");
+                } else if(arg == "--bg-color") {
+                    if(i < argc - 1) s.setBackgroundColor(argv[++i]);
+                    else throwError("Missing color!");
+                } else if(arg == "--bold") {
+                    s.setBold();
+                } else if(arg == "--italic") {
+                    s.setItalic();
+                } else if(arg == "--underline") {
+                    s.setUnderline();
+                } else if(arg == "--string") {
+                    if(i < argc - 1) s.setString(argv[++i]);
+                    else throwError("Missing string!");
+                } else {
+                    throwError("Unknown flag `" + arg + "`!");
+                }
+            } else {
+                s.setString(arg);
+            }
+        }
 
-    s.resetStyle();
-    s.setString("Andhika Rahman");
-    s.setForegroundColor("maenta");
-    s.setUnderline(true);
+        std::string result = s.build();
 
-    std::string s2 = s.build();
-
-    std::cout << s1 << '\n' << s2 << '\n';
+        std::cout << result << '\n';
+    }
 }
