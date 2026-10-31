@@ -3,6 +3,10 @@
 #include <iostream>
 #include <string>
 
+#define APP_NAME "Stylify"
+#define APP_VERSION "0.1.0"
+#define APP_AUTHOR "Andhika Rahman"
+
 #define BOLD "\033[1m"
 #define ITALIC "\033[3m"
 #define UNDERLINE "\033[4m"
@@ -41,6 +45,13 @@ void throwError(const std::string &e) {
 void throwWarning(const std::string &msg) {
     std::cout << BOLD << FG_YELLOW << "warning: " << RESET
               << msg << '\n';
+}
+
+// Show version
+void showVersion() {
+    std::cout << APP_NAME << ' ' << APP_VERSION << '\n';
+    std::cout << "by " << APP_AUTHOR << '\n';
+    exit(0);
 }
 
 class StyledString {
@@ -180,7 +191,7 @@ int main(int argc, char *argv[]) {
                     if(i < argc - 1) s.setString(argv[++i]);
                     else throwError("Missing string!");
                 } else if(arg == "--version") {
-                    //
+                    showVersion();
                 } else {
                     throwError("Unknown flag `" + arg + "`!");
                 }
