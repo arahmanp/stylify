@@ -45,6 +45,7 @@ void throwWarning(const std::string &msg) {
 class StyledString {
 private:
     std::string str;
+    bool isSetStr = false;
 
     std::string fgColor = FG_DEFAULT;
     std::string bgColor = BG_DEFAULT;
@@ -54,10 +55,11 @@ private:
     bool underline  = false;
 
 public:
-    StyledString() : str("") {}
-    StyledString(const std::string &s) : str(s) {}
-
     StyledString& setForegroundColor(const std::string &color) {
+        if(fgColor != FG_DEFAULT) {
+            throwError("You are setting the foreground color more than once!");
+        }
+
         if(color == "black")        fgColor = FG_BLACK;
         else if(color == "red")     fgColor = FG_RED;
         else if(color == "green")   fgColor = FG_GREEN;
@@ -66,13 +68,16 @@ public:
         else if(color == "magenta") fgColor = FG_MAGENTA;
         else if(color == "cyan")    fgColor = FG_CYAN;
         else if(color == "white")   fgColor = FG_WHITE;
-        else if(color == "default") fgColor = FG_DEFAULT;
         else throwError("Unknown color `" + color + "`!");
 
         return *this;
     }
 
     StyledString& setBackgroundColor(const std::string &color) {
+        if(bgColor != BG_DEFAULT) {
+            throwError("You are setting the background color more than once!");
+        }
+
         if(color == "black")        bgColor = BG_BLACK;
         else if(color == "red")     bgColor = BG_RED;
         else if(color == "green")   bgColor = BG_GREEN;
@@ -81,48 +86,61 @@ public:
         else if(color == "magenta") bgColor = BG_MAGENTA;
         else if(color == "cyan")    bgColor = BG_CYAN;
         else if(color == "white")   bgColor = BG_WHITE;
-        else if(color == "default") bgColor = BG_DEFAULT;
         else throwError("Unknown color `" + color + "`!");
 
         return *this;
     }
 
-    StyledString& setBold(bool value) {
-        bold = value;
+    StyledString& setBold() {
+        if(bold) {
+            throwError("You have included the --bold flag more than once!");
+        }
+
+        bold = true;
 
         return *this;
     }
 
-    StyledString& setItalic(bool value) {
-        italic = value;
+    StyledString& setItalic() {
+        if(italic) {
+            throwError("You have included the --italic flag more than once!");
+        }
+
+        italic = true;
 
         return *this;
     }
 
-    StyledString& setUnderline(bool value) {
-        underline = value;
+    StyledString& setUnderline() {
+        if(underline) {
+            throwError("You have included the --underline flag more than once!");
+        }
+
+        underline = true;
 
         return *this;
     }
 
     StyledString& setString(const std::string &s) {
+        if(isSetStr) {
+            throwError("You may only enter one string!");
+        }
+
         str = s;
-
-        return *this;
-    }
-
-    StyledString& resetStyle() {
-        fgColor = FG_DEFAULT;
-        bgColor = BG_DEFAULT;
-
-        bold = false;
-        italic = false;
-        underline = false;
+        isSetStr = true;
 
         return *this;
     }
 
     std::string build() const {
+        if(!isSetStr) {
+            throwError("You did not enter a string!");
+        }
+
+        if(str.empty()) {
+            throwWarning("You entered an empty string.");
+        }
+
         std::string result = fgColor + bgColor;
 
         if(bold)      result += BOLD;
