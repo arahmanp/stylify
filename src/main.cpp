@@ -34,23 +34,30 @@
 #define RESET "\033[0m"
 
 // Error
-void throwError(const std::string &e) {
-    std::cerr << BOLD << FG_RED << "error: " << RESET
-              << e << '\n';
+void throwError(const std::string &msg, const std::string &hint = "") {
+    std::cerr << BOLD << FG_RED << "error: " << RESET << msg << '\n';
+
+    if(!hint.empty()) {
+        std::cerr << BOLD << FG_CYAN << "  hint: " << RESET << hint << '\n';
+    }
 
     exit(1);
 }
 
 // Warning
-void throwWarning(const std::string &msg) {
-    std::cout << BOLD << FG_YELLOW << "warning: " << RESET
-              << msg << '\n';
+void throwWarning(const std::string &msg, const std::string &hint = "") {
+    std::cerr << BOLD << FG_YELLOW << "warning: " << RESET << msg << '\n';
+
+    if(!hint.empty()) {
+        std::cerr << BOLD << FG_CYAN << "  hint: " << RESET << hint << '\n';
+    }
 }
 
 // Show version
 void showVersion() {
-    std::cout << APP_NAME << ' ' << APP_VERSION << '\n';
-    std::cout << "by " << APP_AUTHOR << '\n';
+    std::cout << BOLD << APP_NAME << RESET << ' ' << APP_VERSION << '\n'
+              << "A small CLI tool for styling terminal text.\n"
+              << "Author: " << APP_AUTHOR << '\n';
     exit(0);
 }
 
@@ -68,7 +75,8 @@ struct Config {
 
 void setForegroundColor(Config &conf, const std::string &color) {
     if(conf.fgColor != FG_DEFAULT) {
-        throwError("You are setting the foreground color more than once!");
+        throwError("The foreground color was set more than once.",
+                   "Use --fg-color only once.");
     }
 
     if(color == "black")        conf.fgColor = FG_BLACK;
@@ -79,12 +87,14 @@ void setForegroundColor(Config &conf, const std::string &color) {
     else if(color == "magenta") conf.fgColor = FG_MAGENTA;
     else if(color == "cyan")    conf.fgColor = FG_CYAN;
     else if(color == "white")   conf.fgColor = FG_WHITE;
-    else throwError("Unknown color `" + color + "`!");
+    else throwError("Unknown color `" + color + "`.",
+                    "Available colors: black, red, green, yellow, blue, magenta, cyan, white.");
 }
 
 void setBackgroundColor(Config &conf, const std::string &color) {
     if(conf.bgColor != BG_DEFAULT) {
-        throwError("You are setting the foreground color more than once!");
+        throwError("The background color was set more than once.",
+                   "Use --bg-color only once.");
     }
 
     if(color == "black")        conf.bgColor = BG_BLACK;
@@ -95,12 +105,14 @@ void setBackgroundColor(Config &conf, const std::string &color) {
     else if(color == "magenta") conf.bgColor = BG_MAGENTA;
     else if(color == "cyan")    conf.bgColor = BG_CYAN;
     else if(color == "white")   conf.bgColor = BG_WHITE;
-    else throwError("Unknown color `" + color + "`!");
+    else throwError("Unknown color `" + color + "`.",
+                    "Available colors: black, red, green, yellow, blue, magenta, cyan, white.");
 }
 
 void setBold(Config &conf) {
     if(conf.bold) {
-        throwError("You have included the --bold flag more than once!");
+        throwError("The --bold flag was given more than once.",
+                   "Remove the duplicate --bold.");
     }
 
     conf.bold = true;
@@ -108,7 +120,8 @@ void setBold(Config &conf) {
 
 void setItalic(Config &conf) {
     if(conf.italic) {
-        throwError("You have included the --italic flag more than once!");
+        throwError("The --italic flag was given more than once.",
+                   "Remove the duplicate --italic.");
     }
 
     conf.italic = true;
@@ -116,7 +129,8 @@ void setItalic(Config &conf) {
 
 void setUnderline(Config &conf) {
     if(conf.underline) {
-        throwError("You have included the --underline flag more than once!");
+        throwError("The --underline flag was given more than once.",
+                   "Remove the duplicate --underline.");
     }
 
     conf.underline = true;
@@ -124,7 +138,8 @@ void setUnderline(Config &conf) {
 
 void setString(Config &conf, const std::string &s) {
     if(conf.isSetStr) {
-        throwError("You may only enter one string!");
+        throwError("More than one string was provided.",
+                   "Wrap your text in quotes, e.g. stylify \"hello world\" --bold");
     }
 
     conf.str = s;
@@ -132,6 +147,22 @@ void setString(Config &conf, const std::string &s) {
 }
 
 std::string generate(const Config &conf) {
+    if(!conf.isSetStr) {
+        throwError("No string was provided.",
+                   "Pass text directly or use --string \"text\".");
+    }
+
+    if(conf.str.empty()) {
+        throwWarning("The provided string is empty, so there is nothing to style.",
+                     "Provide a non-empty string, e.g. stylify \"hello\" --bold");
+    }
+
+    if(conf.fgColor == FG_DEFAULT && conf.bgColor == BG_DEFAULT &&
+       !conf.bold && !conf.italic && !conf.underline) {
+        throwWarning("No style options were given, so the text is printed unchanged.",
+                     "Try adding --fg-color, --bold, etc.");
+    }
+
     std::string result = conf.fgColor + conf.bgColor;
 
     if(conf.bold) result += BOLD;
@@ -145,7 +176,8 @@ std::string generate(const Config &conf) {
 
 int main(int argc, char *argv[]) {
     if(argc == 1) {
-        throwError("You must provide at least one argument!");
+        throwError("No arguments provided.",
+                   "Try: stylify \"hello\" --fg-color red --bold");
     } else {
         Config strConfig;
 
@@ -178,8 +210,6 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        std::string result = generate(strConfig);
-
-        std::cout << result << '\n';
+        std::cout << generate(strConfig) << '\n';
     }
 }
