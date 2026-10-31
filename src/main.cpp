@@ -54,8 +54,7 @@ void showVersion() {
     exit(0);
 }
 
-class StyledString {
-private:
+struct Config {
     std::string str;
     bool isSetStr = false;
 
@@ -65,130 +64,109 @@ private:
     bool bold       = false;
     bool italic     = false;
     bool underline  = false;
-
-public:
-    StyledString& setForegroundColor(const std::string &color) {
-        if(fgColor != FG_DEFAULT) {
-            throwError("You are setting the foreground color more than once!");
-        }
-
-        if(color == "black")        fgColor = FG_BLACK;
-        else if(color == "red")     fgColor = FG_RED;
-        else if(color == "green")   fgColor = FG_GREEN;
-        else if(color == "yellow")  fgColor = FG_YELLOW;
-        else if(color == "blue")    fgColor = FG_BLUE;
-        else if(color == "magenta") fgColor = FG_MAGENTA;
-        else if(color == "cyan")    fgColor = FG_CYAN;
-        else if(color == "white")   fgColor = FG_WHITE;
-        else throwError("Unknown color `" + color + "`!");
-
-        return *this;
-    }
-
-    StyledString& setBackgroundColor(const std::string &color) {
-        if(bgColor != BG_DEFAULT) {
-            throwError("You are setting the background color more than once!");
-        }
-
-        if(color == "black")        bgColor = BG_BLACK;
-        else if(color == "red")     bgColor = BG_RED;
-        else if(color == "green")   bgColor = BG_GREEN;
-        else if(color == "yellow")  bgColor = BG_YELLOW;
-        else if(color == "blue")    bgColor = BG_BLUE;
-        else if(color == "magenta") bgColor = BG_MAGENTA;
-        else if(color == "cyan")    bgColor = BG_CYAN;
-        else if(color == "white")   bgColor = BG_WHITE;
-        else throwError("Unknown color `" + color + "`!");
-
-        return *this;
-    }
-
-    StyledString& setBold() {
-        if(bold) {
-            throwError("You have included the --bold flag more than once!");
-        }
-
-        bold = true;
-
-        return *this;
-    }
-
-    StyledString& setItalic() {
-        if(italic) {
-            throwError("You have included the --italic flag more than once!");
-        }
-
-        italic = true;
-
-        return *this;
-    }
-
-    StyledString& setUnderline() {
-        if(underline) {
-            throwError("You have included the --underline flag more than once!");
-        }
-
-        underline = true;
-
-        return *this;
-    }
-
-    StyledString& setString(const std::string &s) {
-        if(isSetStr) {
-            throwError("You may only enter one string!");
-        }
-
-        str = s;
-        isSetStr = true;
-
-        return *this;
-    }
-
-    std::string build() const {
-        if(!isSetStr) {
-            throwError("You did not enter a string!");
-        }
-
-        if(str.empty()) {
-            throwWarning("You entered an empty string.");
-        }
-
-        std::string result = fgColor + bgColor;
-
-        if(bold)      result += BOLD;
-        if(italic)    result += ITALIC;
-        if(underline) result += UNDERLINE;
-
-        result += str + RESET;
-
-        return result;
-    }
 };
+
+void setForegroundColor(Config &conf, const std::string &color) {
+    if(conf.fgColor != FG_DEFAULT) {
+        throwError("You are setting the foreground color more than once!");
+    }
+
+    if(color == "black")        conf.fgColor = FG_BLACK;
+    else if(color == "red")     conf.fgColor = FG_RED;
+    else if(color == "green")   conf.fgColor = FG_GREEN;
+    else if(color == "yellow")  conf.fgColor = FG_YELLOW;
+    else if(color == "blue")    conf.fgColor = FG_BLUE;
+    else if(color == "magenta") conf.fgColor = FG_MAGENTA;
+    else if(color == "cyan")    conf.fgColor = FG_CYAN;
+    else if(color == "white")   conf.fgColor = FG_WHITE;
+    else throwError("Unknown color `" + color + "`!");
+}
+
+void setBackgroundColor(Config &conf, const std::string &color) {
+    if(conf.bgColor != BG_DEFAULT) {
+        throwError("You are setting the foreground color more than once!");
+    }
+
+    if(color == "black")        conf.bgColor = BG_BLACK;
+    else if(color == "red")     conf.bgColor = BG_RED;
+    else if(color == "green")   conf.bgColor = BG_GREEN;
+    else if(color == "yellow")  conf.bgColor = BG_YELLOW;
+    else if(color == "blue")    conf.bgColor = BG_BLUE;
+    else if(color == "magenta") conf.bgColor = BG_MAGENTA;
+    else if(color == "cyan")    conf.bgColor = BG_CYAN;
+    else if(color == "white")   conf.bgColor = BG_WHITE;
+    else throwError("Unknown color `" + color + "`!");
+}
+
+void setBold(Config &conf) {
+    if(conf.bold) {
+        throwError("You have included the --bold flag more than once!");
+    }
+
+    conf.bold = true;
+}
+
+void setItalic(Config &conf) {
+    if(conf.italic) {
+        throwError("You have included the --italic flag more than once!");
+    }
+
+    conf.italic = true;
+}
+
+void setUnderline(Config &conf) {
+    if(conf.underline) {
+        throwError("You have included the --underline flag more than once!");
+    }
+
+    conf.underline = true;
+}
+
+void setString(Config &conf, const std::string &s) {
+    if(conf.isSetStr) {
+        throwError("You may only enter one string!");
+    }
+
+    conf.str = s;
+    conf.isSetStr = true;
+}
+
+std::string generate(const Config &conf) {
+    std::string result = conf.fgColor + conf.bgColor;
+
+    if(conf.bold) result += BOLD;
+    if(conf.italic) result += ITALIC;
+    if(conf.underline) result += UNDERLINE;
+
+    result += conf.str + RESET;
+
+    return result;
+}
 
 int main(int argc, char *argv[]) {
     if(argc == 1) {
         throwError("You must provide at least one argument!");
     } else {
-        StyledString s;
+        Config strConfig;
 
         for(size_t i = 1; i < argc; i++) {
             std::string arg = argv[i];
 
             if(arg.size() >= 1 && arg[0] == '-') {
                 if(arg == "--fg-color") {
-                    if(i < argc - 1) s.setForegroundColor(argv[++i]);
+                    if(i < argc - 1) setForegroundColor(strConfig, argv[++i]);
                     else throwError("Missing color!");
                 } else if(arg == "--bg-color") {
-                    if(i < argc - 1) s.setBackgroundColor(argv[++i]);
+                    if(i < argc - 1) setBackgroundColor(strConfig, argv[++i]);
                     else throwError("Missing color!");
                 } else if(arg == "--bold") {
-                    s.setBold();
+                    setBold(strConfig);
                 } else if(arg == "--italic") {
-                    s.setItalic();
+                    setItalic(strConfig);
                 } else if(arg == "--underline") {
-                    s.setUnderline();
+                    setUnderline(strConfig);
                 } else if(arg == "--string") {
-                    if(i < argc - 1) s.setString(argv[++i]);
+                    if(i < argc - 1) setString(strConfig, argv[++i]);
                     else throwError("Missing string!");
                 } else if(arg == "--version") {
                     showVersion();
@@ -196,11 +174,11 @@ int main(int argc, char *argv[]) {
                     throwError("Unknown flag `" + arg + "`!");
                 }
             } else {
-                s.setString(arg);
+                setString(strConfig, arg);
             }
         }
 
-        std::string result = s.build();
+        std::string result = generate(strConfig);
 
         std::cout << result << '\n';
     }
