@@ -2,6 +2,8 @@
 
 A small command-line tool for styling terminal text with colors and text effects using ANSI escape codes.
 
+> **Disclaimer:** This is a learning project, not an official or production-grade project. That is why the program is kept simple: it only styles text in the terminal. Logic mistakes or design flaws are quite possible, so please use it with that in mind. Feedback and suggestions are welcome 😁.
+
 ## Features
 
 - Set the foreground (text) color
