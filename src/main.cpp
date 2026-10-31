@@ -28,6 +28,20 @@
 
 #define RESET "\033[0m"
 
+// Error
+void throwError(const std::string &e) {
+    std::cerr << BOLD << FG_RED << "error: " << RESET
+              << e << '\n';
+
+    exit(1);
+}
+
+// Warning
+void throwWarning(const std::string &msg) {
+    std::cout << BOLD << FG_YELLOW << "warning: " << RESET
+              << msg << '\n';
+}
+
 class StyledString {
 private:
     std::string str;
